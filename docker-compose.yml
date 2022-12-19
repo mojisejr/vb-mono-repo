@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  apekub:
+    image: apekub:v1.0
+  nft-market:
+    image: nft-market:v1.0
+  punkkub:
+    image: punkkub:v1.0
+    volumes:
+      - "/punkkub-db:/database/sqlite"
+  stocker-dao:
+    image: stocker-dao:v1.0
