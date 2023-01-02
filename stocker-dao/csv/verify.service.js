@@ -4,6 +4,10 @@ const {
   getPunkByDiscordName,
   getPunkByWallet,
 } = require("../database/firestore");
+const {
+  addVerifiedHolder,
+  updateHolderStateByWallet,
+} = require("../database/services/holder.service");
 
 async function getDataByWallet(wallet) {
   const result = await getPunkByWallet(wallet);
@@ -16,7 +20,8 @@ async function getDataByDiscord(discord) {
 }
 
 async function updateVerificationStatus(wallet, status) {
-  updatePunkVerificationState(wallet, status);
+  // updatePunkVerificationState(wallet, status);
+  await updateHolderStateByWallet(wallet, status);
   console.log(`@${wallet} verification status updated to ${status}`);
 }
 
@@ -35,16 +40,25 @@ async function saveVerifiedData({
     return false;
   }
 
-  await addVerifiedPunk({
+  await addVerifiedHolder({
     wallet,
     discordName,
     discordId,
     lastbalance,
     timestamp,
     verified,
-  }).then(() => {
-    console.log(`@${wallet} passed and saved to database`);
   });
+
+  // await addVerifiedPunk({
+  //   wallet,
+  //   discordName,
+  //   discordId,
+  //   lastbalance,
+  //   timestamp,
+  //   verified,
+  // }).then(() => {
+  //   console.log(`@${wallet} passed and saved to database`);
+  // });
 
   return true;
 }
