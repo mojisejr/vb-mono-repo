@@ -18,6 +18,10 @@ const client = new Client({
 const ethers = require("ethers");
 const { giveRole, takeRole } = require("./discord.role");
 const { getHolderBalance } = require("./discord.verify");
+const {
+  getHolderByWallet,
+  updateHolderStateByWallet,
+} = require("../stocker-dao/database/services/holder.service");
 const BKCMainnetUrl = process.env.bitkubMainnet;
 const BKCProvider = new ethers.providers.JsonRpcProvider(BKCMainnetUrl);
 
@@ -51,6 +55,7 @@ const punkkub = new ethers.Contract(
   process.env.punkkub,
   [
     "function tokenURI(uint256 _tokenId) view returns(string memory)",
+    "function balanceOf(address _owner) view returns(uint256)",
     "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
   ],
   BKCProvider
@@ -84,16 +89,16 @@ punkkub.on("Transfer", async (from, to, tokenId) => {
 });
 
 async function onTransferUpdateRole(wallet) {
-  const holderData = await getDataByWallet(wallet);
+  const holderData = await getHolderByWallet(wallet);
   const balance = await getHolderBalance(wallet);
-  if (balance > 0 && holderData && holderData.wallet == wallet) {
+  if (balance > 0 && holderData && holderData.walletAddress == wallet) {
     console.log(`@${wallet} : is holder.`);
     await giveRole(client, holderData.discordId);
-    await updateVerificationStatus(wallet, balance, true);
-  } else if (balance <= 0 && holderData && holderData.wallet == wallet) {
+    await updateHolderStateByWallet(wallet, balance, true);
+  } else if (balance <= 0 && holderData && holderData.walletAddress == wallet) {
     console.log(`@${wallet} : is NOT holder`);
     await takeRole(client, holderData.discordId);
-    await updateVerificationStatus(wallet, balance, false);
+    await updateHolderStateByWallet(wallet, balance, false);
   } else {
     console.log(`transfer from non-verified holder. @${wallet}`);
   }

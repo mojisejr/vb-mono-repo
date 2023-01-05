@@ -1,6 +1,4 @@
-require("dotenv").config({
-  path: "./config.env",
-});
+require("dotenv").config();
 
 const {
   punkkubBotToken,
@@ -26,7 +24,7 @@ const sequelize = new Sequelize("whos-hodl", "non", "apollo2022team@-<A", {
 sequelize.sync().then(() => console.log("PSQL: synced!!"));
 
 async function migrate() {
-  const address = "0x9E718B5D46D100E021537E59130Bed9991D78eC0";
+  const address = "0x6D5724cc5125C2de0DebACb779A11307B3AbADE9";
   const abi = ["function balanceOf(address _owner) view returns(uint256)"];
   const provider = new ethers.providers.JsonRpcProvider(
     "https://rpc.bitkubchain.io"
@@ -47,6 +45,7 @@ async function migrate() {
       };
     })
   );
+  console.log(results);
   await Holder.bulkCreate(results).catch((e) =>
     console.log("bulk creation failed,", e)
   );
@@ -57,11 +56,10 @@ async function updateRoles() {
     where: { nftAddress: punkkub, verified: false },
   });
 
-  console.log(results.length);
-
   const data = results.map((r) => r.dataValues);
 
   data.forEach(async (d) => {
+    console.log("updated role for : ", d.discordId);
     await takeRole(bot, d.discordId);
   });
 }

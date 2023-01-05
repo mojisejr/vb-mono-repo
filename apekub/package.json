@@ -25,6 +25,7 @@
     "express": "^4.17.1",
     "firebase-admin": "^11.0.0",
     "jsontocsv": "^0.3.0",
+    "pg": "^8.8.0",
     "sequelize": "^6.18.0",
     "sqlite3": "^5.0.2"
   }

@@ -1,3 +1,6 @@
+require("dotenv").config({
+  path: "./config.env",
+});
 const { Client, Intents, MessageEmbed } = require("discord.js");
 
 const { checkVerifyHolder } = require("./discord.verify");

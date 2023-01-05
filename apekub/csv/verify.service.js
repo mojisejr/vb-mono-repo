@@ -1,4 +1,9 @@
 const {
+  updateHolderStateByWallet,
+  getHolderByDiscordId,
+  addVerifiedHolder,
+} = require("../../stocker-dao/database/services/holder.service");
+const {
   addVerifiedPunk,
   updatePunkVerificationState,
   getPunkByDiscordName,
@@ -15,8 +20,9 @@ async function getDataByDiscord(discord) {
   return result;
 }
 
-async function updateVerificationStatus(wallet, status) {
-  updatePunkVerificationState(wallet, status);
+async function updateVerificationStatus(wallet, balance, status) {
+  // updatePunkVerificationState(wallet, status);
+  await updateHolderStateByWallet(wallet, balance, status);
   console.log(`@${wallet} verification status updated to ${status}`);
 }
 
@@ -28,23 +34,32 @@ async function saveVerifiedData({
   lastbalance,
   verified,
 }) {
-  const isVerified = await getDataByDiscord(discordName);
-  console.log("isVerified before save: ", isVerified);
-  if (isVerified) {
+  // const isVerified = await getDataByDiscord(discordName);
+  const holder = await getHolderByDiscordId(discordId);
+  console.log("isVerified before save: ", holder.verified);
+  if (holder.verified) {
     console.log("address already registered");
     return false;
   }
 
-  await addVerifiedPunk({
+  await addVerifiedHolder({
     wallet,
-    discordName,
     discordId,
-    lastbalance,
     timestamp,
+    lastbalance,
     verified,
-  }).then(() => {
-    console.log(`@${wallet} passed and saved to database`);
   });
+
+  // await addVerifiedPunk({
+  //   wallet,
+  //   discordName,
+  //   discordId,
+  //   lastbalance,
+  //   timestamp,
+  //   verified,
+  // }).then(() => {
+  //   console.log(`@${wallet} passed and saved to database`);
+  // });
 
   return true;
 }

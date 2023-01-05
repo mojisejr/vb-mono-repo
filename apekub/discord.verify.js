@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const { ethers } = require("ethers");
 
 const {
@@ -7,6 +9,9 @@ const {
 } = require("./csv/verify.service");
 
 const { giveRole, takeRole } = require("./discord.role");
+const {
+  getHolderByDiscordId,
+} = require("../stocker-dao/database/services/holder.service");
 
 const BKCMainnetUrl = process.env.bitkubMainnet;
 // const BKCMainnetUrl = process.env.bitkubTestnet;
@@ -35,7 +40,7 @@ async function checkVerifyHolder(inputData, client, interaction) {
   }
 
   // interaction.reply("ขอตรวจกระเป๋าหน่อยนะ .. 🤖");
-  const verified = await isVerified(discordName);
+  const verified = await isVerified(discordId);
   console.log("verified", verified);
 
   const balance = await getHolderBalance(wallet);
@@ -69,7 +74,7 @@ async function checkVerifyHolder(inputData, client, interaction) {
       await interaction.reply(
         `@${discordName} ยินดีต้อนรับกลับมา ชาว Ape!! [Welcome Back!] 🦾🦾🦾`
       );
-      updateVerificationStatus(wallet, true);
+      await updateVerificationStatus(wallet, balance, true);
       await giveRole(client, discordId);
     }
   } else if (balance > 0 && verified) {
@@ -118,8 +123,9 @@ async function getHolderBalance(address) {
 }
 
 //check if the sender is verified
-async function isVerified(discordName) {
-  const data = await getDataByDiscord(discordName);
+async function isVerified(discordId) {
+  const data = await getHolderByDiscordId(discordId);
+  // const data = await getDataByDiscord(discordName);
 
   if (data != null) {
     return data.verified ? true : false;
