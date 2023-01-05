@@ -6,10 +6,6 @@ const {
   updateVerificationStatus,
 } = require("./csv/verify.service");
 const { log } = require("./database/csv.log.service");
-const {
-  reverifyCheck,
-  deleteHolderData,
-} = require("./database/verify.service");
 
 const { giveRole, takeRole } = require("./discord.role");
 const {

@@ -3,12 +3,6 @@ const {
   addVerifiedHolder,
   updateHolderStateByWallet,
 } = require("../database/postgres/services/holder.service");
-const {
-  addVerifiedPunk,
-  updatePunkVerificationState,
-  getPunkByDiscordName,
-  getPunkByWallet,
-} = require("../database/verify.service");
 
 async function getDataByWallet(wallet) {
   const result = await getPunkByWallet(wallet);

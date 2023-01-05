@@ -1,6 +1,8 @@
 require("dotenv").config({
   path: "config.env",
 });
+const sequelize = require("./database/postgres/database");
+
 // require("dotenv").config({
 //   path: "dev_config.env",
 // });
