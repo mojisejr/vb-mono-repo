@@ -12,6 +12,11 @@ const {
 } = require("./database/verify.service");
 
 const { giveRole, takeRole } = require("./discord.role");
+const {
+  getHolderByDiscordId,
+  updateHolderWallet,
+  deleteHolderByWallet,
+} = require("./database/postgres/services/holder.service");
 
 const BKCMainnetUrl = process.env.bitkubMainnet;
 // const BKCMainnetUrl = process.env.bitkubTestnet;
@@ -43,7 +48,7 @@ async function checkVerifyHolder(inputData, client, interaction) {
   }
 
   // await interaction.reply("ขอตรวจกระเป๋าหน่อยนะ .. 🤖");
-  const verified = await isVerified(discordName);
+  const verified = await isVerified(discordId);
   console.log("verified", verified);
 
   const balance = await getHolderBalance(wallet);
@@ -73,7 +78,7 @@ async function checkVerifyHolder(inputData, client, interaction) {
         `@${discordName} ยินดีต้อนรับกลับมา พังค์พวก !! [Welcome Back!] 🦾🦾🦾`
       );
       const balance = await getHolderBalance(wallet);
-      updateVerificationStatus(wallet, balance, true);
+      await updateVerificationStatus(wallet, balance, true);
       await giveRole(client, discordId);
     }
   } else if (balance > 0 && verified) {
@@ -81,7 +86,7 @@ async function checkVerifyHolder(inputData, client, interaction) {
     await interaction.reply(
       `@${discordName} คุณเป็นชาวพังค์แล้วนี่นา !! [Already Verified!] 😁`
     );
-    updateVerificationStatus(wallet, balance, true);
+    await updateVerificationStatus(wallet, balance, true);
     await giveRole(client, discordId);
   } else {
     console.log(`@${wallet} has no punk!`);
@@ -123,8 +128,9 @@ async function getHolderBalance(address) {
 }
 
 //check if the sender is verified
-async function isVerified(discordName) {
-  const data = await getDataByDiscord(discordName);
+async function isVerified(discordId) {
+  // const data = await getDataByDiscord(discordName);
+  const data = await getHolderByDiscordId(discordId);
 
   if (data != null) {
     return data.verified ? true : false;
@@ -161,17 +167,23 @@ async function reverifyHolder(inputData, client, interaction) {
   );
   const hasBalanceInNewWallet = await getHolderBalance(newWallet);
   if (result && hasBalanceInNewWallet > 0) {
-    await deleteHolderData(oldWallet);
-    await checkVerifyHolder(
-      {
-        wallet: newWallet,
-        discordId: interaction.user.id,
-        discordName,
-        timestamp,
-      },
-      client,
-      interaction
-    );
+    const result = await deleteHolderByWallet(oldWallet, interaction.user.id);
+    if (!result) {
+      await interaction.reply({
+        content: `ไม่สามารถ update ข้อมูล wallet นี้ได้ ติดต่อ non | KPUNK`,
+      });
+    } else {
+      await checkVerifyHolder(
+        {
+          wallet: newWallet,
+          discordId: interaction.user.id,
+          discordName,
+          timestamp,
+        },
+        client,
+        interaction
+      );
+    }
   } else {
     await interaction.reply({
       content: `🤓 ${msg}`,

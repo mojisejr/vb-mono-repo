@@ -3,7 +3,7 @@ const basePath = process.cwd();
 
 const sequelize = new Sequelize("game-state-db", "user", "pass", {
   dialect: "sqlite",
-  host: `./`,
+  host: "./database/sqlite/state.sqlite",
   logging: true,
 });
 

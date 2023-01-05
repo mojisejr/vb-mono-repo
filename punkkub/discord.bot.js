@@ -25,6 +25,9 @@ const {
   getDataByWallet,
   updateVerificationStatus,
 } = require("./csv/verify.service");
+const {
+  getHolderByWallet,
+} = require("./database/postgres/services/holder.service");
 
 const punkkub = new ethers.Contract(
   process.env.punkkub,
@@ -105,13 +108,14 @@ punkkub.on("Transfer", async (from, to, tokenId) => {
 });
 
 async function onTransferUpdateRole(wallet) {
-  const holderData = await getDataByWallet(wallet);
+  // const holderData = await getDataByWallet(wallet);
+  const holderData = await getHolderByWallet(wallet);
   const balance = await getHolderBalance(wallet);
-  if (balance > 0 && holderData && holderData.wallet == wallet) {
+  if (balance > 0 && holderData && holderData.walletAddress == wallet) {
     console.log(`@${wallet} : is holder.`);
     await giveRole(client, holderData.discordId);
     await updateVerificationStatus(wallet, balance, true);
-  } else if (balance <= 0 && holderData && holderData.wallet == wallet) {
+  } else if (balance <= 0 && holderData && holderData.walletAddress == wallet) {
     console.log(`@${wallet} : is NOT holder`);
     await takeRole(client, holderData.discordId);
     await updateVerificationStatus(wallet, balance, false);
